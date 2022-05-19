@@ -8,9 +8,9 @@ var session = require('express-session');
 var expressValidator = require('express-validator');
 
 const db = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: 'ฎฟ3116199',
+    host: 'innopark-easypark.cng6un8oxcnc.ap-southeast-1.rds.amazonaws.com',
+    user: 'admin',
+    password: 'admin1234$',
     database: 'easyparkdb'
 });
 
