@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {
   FlatList,
   StyleSheet,
@@ -8,25 +8,60 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
+  Modal,
+  Image,
 } from 'react-native';
 import axios from 'axios';
-
+import {userContext} from '../context/userContext';
+userContext;
 const SelectFloor = ({navigation, route}) => {
   const [floors, setFloors] = useState([]);
   const [selected, setSelected] = useState(false);
+  const [showSpace, setShowSpace] = useState(false);
   const {passType, typeID, price} = route.params;
-  const continuePressHandler = floor => {
+  const [availSpace, setAvailSpace] = useState([]);
+  const [selectedFloor, setSelectedFloor] = useState();
+  const {user} = useContext(userContext);
+  const continuePressHandler = async floor => {
     setSelected(!selected);
-    setFloors(floor.floor);
-    console.log(floor.floor);
-    navigation.navigate('Parking', {
-      floor: floor.floor,
-      type: passType,
-      id: typeID,
-      pricePerH: price,
-    });
+    setSelectedFloor(floor.floor);
+    const responseSpace = await axios
+      .get(`http://192.168.1.39:5000/getAFreeSpace`, {
+        params: {
+          typeID: typeID,
+          inFloor: floor.floor,
+        },
+      })
+      .then(d => {
+        setAvailSpace(d.data);
+        return d;
+      })
+      .then( async (d) => {
+        const response = await axios
+          .put('http://192.168.1.39:5000/updateSpaceAvailablelity', {
+            spaceID: d.data[0].space_id,
+            available: 'N',
+          })
+          .then(r => console.log(r.data));
+        return d;
+      })
+      .then(d => {
+        setShowSpace(true);
+        console.log('send', availSpace);
+        const timer = setTimeout(() => {
+          setShowSpace(false);
+          navigation.navigate('Parking', {
+            floor: floor.floor,
+            type: passType,
+            space: d.data,
+            typeID: typeID,
+            pricePerH: price,
+          });
+          clearTimeout(timer);
+        }, 4000);
+      })
+      .catch(err => console.log(err));
   };
-
   const loadData = async () => {
     const responseFloor = await axios.get(`http://192.168.1.39:5000/getFloor`, {
       params: {
@@ -34,21 +69,44 @@ const SelectFloor = ({navigation, route}) => {
       },
     });
     setFloors(responseFloor.data);
-    // const responseSpace = await axios.get(`http://192.168.1.39:5000/getFloor`,{
-    //   params: {
-    //     type: typeID,
-    //     //floor: floors,
-    //   }
-    // });
-    // setFreeSpace(responseSpace.data);
   };
 
   useEffect(() => {
+    console.log(user);
     loadData();
   }, []);
 
   return (
     <SafeAreaView style={styles.container}>
+      <Modal visible={showSpace} transparent>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: '#00000099',
+          }}>
+          <View style={styles.modal}>
+            <Image
+              style={{}}
+              source={require('../assets/check-mark-button.png')}></Image>
+            <Text style={{fontWeight: 'bold', fontSize: 20}}>
+              Space Successfully Booked
+            </Text>
+            <Text style={{fontWeight: '500', fontSize: 15, color: '#A6AAB4'}}>
+              Your are place at
+            </Text>
+            {availSpace.map(index => (
+              <Text key={0} style={{fontWeight: 'bold', fontSize: 40}}>
+                {index.space_id}
+              </Text>
+            ))}
+            <Text style={{fontWeight: '500', fontSize: 13}}>
+              (Floor {selectedFloor})
+            </Text>
+          </View>
+        </View>
+      </Modal>
       <View style={[{marginTop: 10}, styles.Header]}>
         <Text style={{fontSize: 18, fontWeight: 'bold'}}>Select a floor</Text>
       </View>
@@ -81,6 +139,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f4f7',
     alignItems: 'center',
     justifyContent: 'flex-start',
+  },
+  modal: {
+    width: 300,
+    height: 300,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   section: {
     top: '10%',

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import axios from 'axios';
+import React, {useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,27 +8,33 @@ import {
   Pressable,
   TouchableOpacity,
   Image,
-} from "react-native";
+} from 'react-native';
 
 export default function Register({navigation}) {
   const [email, setEmail] = useState(null);
   const [username, setUsername] = useState(null);
   const [password, setPassword] = useState(null);
   const [submit, setSubmit] = useState(false);
-  const onPressHandler = () => {
-    setSubmit(!submit);
-    navigation.navigate('SelectType');
+  const onPressHandler = async () => {
+    setSubmit(true);
+    const response = await axios
+      .post('http://192.168.1.39:5000/register', {
+          username: username,
+          email: email,
+          password: password,
+      })
+      .then(response => console.log(response.data));
+      navigation.navigate('Log In');
   };
-  const signinHandler = () => {
+  const GoToSignin = () => {
     navigation.navigate('Log In');
-  }
+  };
   return (
     <View style={styles.container}>
       <Image
         style={styles.logo}
-        source={require("../assets/EasyparkLogo.png")}
-      ></Image>
-      <View style={[{ marginTop: 60, marginBottom: 20 }, styles.section]}>
+        source={require('../assets/EasyparkLogo.png')}></Image>
+      <View style={[{marginTop: 60, marginBottom: 20}, styles.section]}>
         <TextInput
           style={styles.input}
           onChangeText={setEmail}
@@ -57,9 +64,12 @@ export default function Register({navigation}) {
       <TouchableOpacity onPress={onPressHandler} style={styles.button}>
         <Text style={styles.text}>Register</Text>
       </TouchableOpacity>
-      <View style={[{ marginTop: 30 }, styles.section]}>
+      <View style={[{marginTop: 30}, styles.section]}>
         <Text>
-          Already have an account? <Text onPress={signinHandler} style={styles.linkText}>Sign in</Text>
+          Already have an account?{' '}
+          <Text onPress={GoToSignin} style={styles.linkText}>
+            Sign in
+          </Text>
         </Text>
       </View>
     </View>
@@ -69,42 +79,42 @@ export default function Register({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: "column",
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'column',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   section: {
-    alignItems: "center",
-    width: "100%",
+    alignItems: 'center',
+    width: '100%',
   },
   input: {
     borderBottomWidth: 1,
-    borderBottomColor: "#A6AAB4",
+    borderBottomColor: '#A6AAB4',
     padding: 5,
     margin: 5,
-    width: "80%",
+    width: '80%',
   },
   text: {
-    color: "#ffffff",
+    color: '#ffffff',
     margin: 10,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   button: {
-    width: "80%",
+    width: '80%',
     height: 50,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 30,
     borderRadius: 6,
-    backgroundColor: "#f87444",
+    backgroundColor: '#f87444',
   },
   linkText: {
-    color: "#F47346",
+    color: '#F47346',
   },
   logo: {
-    width: "80%",
-    height: "20%",
-    resizeMode: "contain",
+    width: '80%',
+    height: '20%',
+    resizeMode: 'contain',
   },
 });
