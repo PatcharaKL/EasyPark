@@ -31,31 +31,22 @@ const ParkingCar = ({navigation, route}) => {
       const convertedCI = moment().format('MM/DD/YYYY hh:mm:ss');
       setCheckIn(convertedCI);
     }
-    if(count >= 1){
-      const convertedCO = moment().format('MM/DD/YYYY hh:mm:ss');
-      setCheckOut(convertedCO);
-    }
     if (count >= 1) {
       const response = await axios
         .post('http://192.168.1.39:5000/postParking', {
-          INparking_time: TotalTime,
+          INparking_time: (Math.floor((time / 3600000) % 60) + 1),
           INtotal_price: (Math.floor((time / 3600000) % 60) + 1) * pricePerH,
           INcheck_in: checkIn,
-          INcheckout: checkOut,
+          INcheckout: moment().format('MM/DD/YYYY hh:mm:ss'),
           INspace_id: space[0].space_id,
           INcustomerID: user[0].userID,
         })
         .then(res => console.log(res.data));
-      navigation.navigate('PIN',{
+      navigation.navigate('PIN', {
         price: (Math.floor((time / 3600000) % 60) + 1) * pricePerH,
-        INspace_id: space[0].space_id
+        INspace_id: space[0].space_id,
       });
     }
-  };
-  const parseToString = () => {
-    const checkOutTimestamp = Date.now();
-    const convertedCO = moment().format('MM/DD/YYYY hh:mm:ss');
-    setCheckOut(convertedCO);
   };
   useEffect(() => {
     let interval = null;
@@ -67,7 +58,9 @@ const ParkingCar = ({navigation, route}) => {
     } else {
       clearInterval(interval);
     }
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+    };
   }, [timerOn]);
 
   const [pressed, setPressed] = useState(false);

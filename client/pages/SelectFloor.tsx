@@ -69,11 +69,12 @@ const SelectFloor = ({navigation, route}) => {
       },
     });
     setFloors(responseFloor.data);
+    console.log(responseFloor.data);
   };
 
   useEffect(() => {
-    console.log(user);
     loadData();
+    
   }, []);
 
   return (

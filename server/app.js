@@ -10,7 +10,7 @@ var expressValidator = require('express-validator');
 const db = mysql.createPool({
     host: 'innopark-easypark.cng6un8oxcnc.ap-southeast-1.rds.amazonaws.com',
     user: 'admin',
-    password: 'admin1234$',
+    password: '123456789',
     database: 'easyparkdb'
 });
 
@@ -28,7 +28,8 @@ app.get('/getAFreeSpace',(req,res)=>{
 });
 app.post('/Parking', (req, res)=>{
     
-});
+})
+;
 app.get('/getSpaceType',(req, res)=>{
     const getSpaceType = "call getSpaceTypes()"
     db.query(getSpaceType, (err, result)=>{
@@ -153,6 +154,33 @@ app.post('/CreateCustomer',(req, res) => {
             console.log(err);
         }
         else{
+            res.send(result[0]);
+        }
+    })
+})
+app.get('/GetHistory',(req,res)=>{
+    const cusID = req.query.cusID;
+    const getHis = "call GetHistory(?)"
+    db.query(getHis, [cusID], (err, result)=>{
+        if(err){
+            console.log(err)
+        }
+        else{
+            console.log(result)
+            res.send(result[0]);
+        }
+    })
+})
+app.delete('/deleteHistory',(req,res) => {
+    const cusID = req.body.cusID
+    const delHis = "call deleteHistory(?)"
+    console.log(cusID)
+    db.query(delHis, [cusID], (err, result)=>{
+        if(err){
+            console.log(err)
+        }
+        else{
+            console.log(result)
             res.send(result[0]);
         }
     })
